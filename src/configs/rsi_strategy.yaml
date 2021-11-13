@@ -1,0 +1,8 @@
+rsi:
+  ind: RSI
+  col: open_price
+  timeperiod: 4
+
+logic:
+  buy: rsi < 30.0
+  sell: rsi > 60.0

@@ -1,0 +1,11 @@
+short:
+  ind: SMA
+  col: open_price
+  timeperiod: 4
+long:
+  ind: SMA
+  col: open_price
+  timeperiod: 8
+logic:
+  buy: short > long
+  sell: long < short
