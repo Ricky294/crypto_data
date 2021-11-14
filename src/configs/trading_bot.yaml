@@ -1,6 +1,6 @@
 broker: binance
 symbol: btcusdt
-interval: 1d
+interval: 15m
 market: futures
 strategy: sma_strategy.json
 start: 2021-11-10 17:55:00    # ISO 8601

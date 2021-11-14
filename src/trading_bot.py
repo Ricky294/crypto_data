@@ -1,11 +1,16 @@
+import multiprocessing
+import time
+
 import pandas as pd
 import websocket
 
 from src.broker.binance_.broker import BinanceBroker
-from src.broker.binance_.schema import OPEN_TIME
+from src.broker.binance_.schema import OPEN_TIME, MARKET_MAP
 from src.broker.binance_.transform import append_binance_streaming_data
 from src.db.candle_db import CandleDB
-from src.utils import read_json, read_yaml, add_interval
+from src.utils import read_json, read_yaml, progress_bar, interval_in_seconds
+
+DOWNLOAD_LIMIT = 1000
 
 
 def on_open(_):
@@ -35,24 +40,46 @@ def main():
     socket_type = bot_config["socket_type"]
 
     broker_secrets = read_json("secrets", f"{name}_secrets.json")
-    broker = BinanceBroker(name, **broker_secrets)
+    broker = BinanceBroker(
+        api_key=broker_secrets["api_key"], api_secret=broker_secrets["api_secret"]
+    )
 
     db = CandleDB(name)
     db_candle_df = db.read_candle_df(symbol=symbol, interval=interval, market=market)
 
     start_time = (
-        0
+        int(
+            broker.client._get_earliest_valid_timestamp(
+                symbol.upper(), interval, MARKET_MAP[market]
+            )
+            / 1000
+        )
         if db_candle_df is None
-        else add_interval(db_candle_df[OPEN_TIME].values[-1], interval) - 1
+        else int(db_candle_df[OPEN_TIME].values[-1]) + interval_in_seconds(interval)
     )
+
+    progress_bar_thread = multiprocessing.Process(
+        target=progress_bar,
+        kwargs={
+            "start_time": start_time,
+            "end_time": int(time.time()),
+            "interval": interval,
+            "update_size": DOWNLOAD_LIMIT,
+            "sleep_in_seconds": 1,
+        },
+    )
+    progress_bar_thread.start()
 
     missing_candle_df = broker.get_historical_candle_dataframe(
         symbol=symbol,
         interval=interval,
         market=market,
-        start_time=start_time,
+        start_time=start_time * 1000,
         include_columns=columns,
+        limit=DOWNLOAD_LIMIT,
     )
+
+    progress_bar_thread.terminate()
 
     if db_candle_df is None and missing_candle_df is not None:
         candle_df = missing_candle_df

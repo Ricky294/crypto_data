@@ -1,6 +1,9 @@
 import os
 import json
+import time
+
 import yaml
+from tqdm import tqdm
 
 SEC_MAP = {
     "s": 1,
@@ -24,10 +27,10 @@ def read_yaml(*path):
 
 
 def split_interval(interval: str):
-    measure = interval[len(interval) - 1]
+    timeframe = interval[len(interval) - 1]
     value = interval[0 : len(interval) - 1]
 
-    return int(value), measure
+    return int(value), timeframe
 
 
 def interval_ratio(numerator_interval: str, denominator_interval: str) -> int:
@@ -40,14 +43,26 @@ def interval_ratio(numerator_interval: str, denominator_interval: str) -> int:
     return int((n_multiplier * niv) / (d_multiplier * div))
 
 
-def add_interval(timestamp: int, interval: str):
-    timestamp = int(timestamp)
-
-    value, time = split_interval(interval)
-    time_in_sec = SEC_MAP[time]
-    return timestamp + (time_in_sec * value)
+def interval_in_seconds(interval: str) -> int:
+    value, timeframe = split_interval(interval)
+    return value * SEC_MAP[timeframe]
 
 
 def round_down(number: float, precision: int):
     s = str(number)
     return float(s[: s.find(".") + precision + 1])
+
+
+def progress_bar(
+    start_time: int,
+    end_time: int,
+    interval: str,
+    update_size: int,
+    sleep_in_seconds: int,
+):
+    total_time = (end_time - start_time) / interval_in_seconds(interval)
+
+    with tqdm(total=int(total_time)) as bar:
+        for _ in range(round(total_time / update_size)):
+            time.sleep(sleep_in_seconds)
+            bar.update(update_size)

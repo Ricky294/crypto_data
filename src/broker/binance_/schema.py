@@ -1,3 +1,5 @@
+from binance.enums import HistoricalKlinesType
+
 OPEN_TIME = "open_time"
 OPEN_PRICE = "open_price"
 HIGH_PRICE = "high_price"
@@ -86,4 +88,13 @@ AGGREGATE_MAP = {
     TAKER_BUY_BASE_ASSET_VOLUME: "sum",
     TAKER_BUY_QUOTE_ASSET_VOLUME: "sum",
     IGNORE: "sum",
+}
+
+
+SPOT_MARKET = "spot"
+FUTURES_MARKET = "futures"
+
+MARKET_MAP = {
+    SPOT_MARKET: HistoricalKlinesType.SPOT,
+    FUTURES_MARKET: HistoricalKlinesType.FUTURES,
 }

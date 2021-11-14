@@ -2,14 +2,11 @@ from typing import Optional, List
 
 import pandas as pd
 from binance import Client
-from binance.enums import HistoricalKlinesType
 
+from src.broker.binance_.schema import MARKET_MAP
 from src.broker.binance_.trade import get_symbol_info
 from src.broker.binance_.transform import transform_binance_historical_candles
 from src.utils import round_down
-
-SPOT_MARKET = "spot"
-FUTURES_MARKET = "futures"
 
 
 class BinanceBroker:
@@ -25,24 +22,22 @@ class BinanceBroker:
         start_time: int,
         end_time: int = None,
         remove_last_open_candle: bool = True,
+        limit: int = 1000,
     ) -> Optional[pd.DataFrame]:
-        market_map = {
-            SPOT_MARKET: HistoricalKlinesType.SPOT,
-            FUTURES_MARKET: HistoricalKlinesType.FUTURES,
-        }
 
         candles = self.client.get_historical_klines(
             symbol=symbol,
             interval=interval,
             start_str=start_time,
             end_str=end_time,
-            klines_type=market_map[market],
+            klines_type=MARKET_MAP[market],
+            limit=limit,
         )
-        # if list is not empty
-        if candles:
-            if remove_last_open_candle:
-                candles.pop()
 
+        if candles and remove_last_open_candle:
+            candles.pop()
+
+        if candles:
             return transform_binance_historical_candles(candles, include_columns)
 
     def create_order(
