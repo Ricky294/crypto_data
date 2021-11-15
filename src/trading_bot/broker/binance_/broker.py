@@ -3,15 +3,27 @@ from typing import Optional, List
 import pandas as pd
 from binance import Client
 
-from src.broker.binance_.schema import MARKET_MAP
-from src.broker.binance_.trade import get_symbol_info
-from src.broker.binance_.transform import transform_binance_historical_candles
-from src.utils import round_down
+from src.trading_bot.broker.binance_.schema import MARKET_MAP
+from src.trading_bot.broker.binance_.trade import get_symbol_info
+from src.trading_bot.broker.binance_.transform import (
+    transform_binance_historical_candles,
+)
+from src.trading_bot.utils import round_down
 
 
 class BinanceBroker:
     def __init__(self, api_key: str, api_secret: str):
         self.client = Client(api_key=api_key, api_secret=api_secret)
+
+    def get_earliest_historical_candle_timestamp(
+        self, symbol: str, interval: str, market: str
+    ):
+        return int(
+            self.client._get_earliest_valid_timestamp(
+                symbol.upper(), interval, MARKET_MAP[market]
+            )
+            / 1000
+        )
 
     def get_historical_candle_dataframe(
         self,

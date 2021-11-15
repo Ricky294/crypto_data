@@ -5,19 +5,21 @@ from typing import List, Callable
 import numpy as np
 import pandas as pd
 
-from src.broker.binance_.schema import (
-    COLUMN_DATA_TYPE_MAP,
+from src.trading_bot.broker.binance_.schema import (
+    OPEN_TIME,
     CLOSE_TIME,
     COLUMNS,
+    COLUMN_DATA_TYPE_MAP,
     AGGREGATE_MAP,
     CHAR_COLUMN_MAP,
-    OPEN_TIME,
 )
-from src.utils import interval_ratio
+from src.trading_bot.utils import interval_ratio
 
 
 def append_binance_streaming_data(
-    candle_df: pd.DataFrame, on_candle: Callable, on_candle_close: Callable
+    candle_df: pd.DataFrame,
+    on_candle: Callable,
+    on_candle_close: Callable,
 ):
     def transform(socket, stream_data: str):
         new_candle: dict = json.loads(stream_data)["k"]
@@ -30,21 +32,25 @@ def append_binance_streaming_data(
     return transform
 
 
+def drop_rows_before(candle_df: pd.DataFrame, start_time: int):
+    return candle_df[candle_df[OPEN_TIME] >= start_time]
+
+
 def transform_binance_stream_candle(candle: dict, include_columns: List[str]):
-    stream_df = __transform_binance_stream_candle_to_dataframe(candle)
-    stream_df = __transform_binance_candle_dataframe_types(stream_df)
-    return __filter_binance_candle_dataframe(stream_df, include_columns)
+    stream_df = transform_binance_stream_candle_to_dataframe(candle)
+    stream_df = transform_binance_candle_dataframe_types(stream_df)
+    return filter_binance_candle_dataframe(stream_df, include_columns)
 
 
 def transform_binance_historical_candles(
     candles: List[List], include_columns: List[str]
 ):
-    historical_df = __transform_binance_historical_candles_to_dataframe(candles)
-    historical_df = __transform_binance_candle_dataframe_types(historical_df)
-    return __filter_binance_candle_dataframe(historical_df, include_columns)
+    historical_df = transform_binance_historical_candles_to_dataframe(candles)
+    historical_df = transform_binance_candle_dataframe_types(historical_df)
+    return filter_binance_candle_dataframe(historical_df, include_columns)
 
 
-def __transform_binance_candle_dataframe_types(candles_df: pd.DataFrame):
+def transform_binance_candle_dataframe_types(candles_df: pd.DataFrame):
     candles_df = candles_df.astype(
         {col: dtype for col, dtype in COLUMN_DATA_TYPE_MAP.items()}
     )
@@ -54,20 +60,22 @@ def __transform_binance_candle_dataframe_types(candles_df: pd.DataFrame):
     return candles_df
 
 
-def __filter_binance_candle_dataframe(candles_df: pd.DataFrame, includes: List[str]):
-    columns_to_drop = [column for column in COLUMNS if column not in includes]
+def filter_binance_candle_dataframe(candles_df: pd.DataFrame, includes: List[str]):
+    df_columns = list(candles_df)
+
+    columns_to_drop = [column for column in df_columns if column not in includes]
     candles_df.drop(columns=columns_to_drop, inplace=True, axis=1)
 
     return candles_df
 
 
-def __transform_binance_historical_candles_to_dataframe(
+def transform_binance_historical_candles_to_dataframe(
     candles: List[List],
 ) -> pd.DataFrame:
     return pd.DataFrame(np.array(candles), columns=COLUMNS)
 
 
-def __transform_binance_stream_candle_to_dataframe(candle: dict):
+def transform_binance_stream_candle_to_dataframe(candle: dict):
     candle_copy = copy.deepcopy(candle)
 
     candle_copy.pop("x")  # is closed

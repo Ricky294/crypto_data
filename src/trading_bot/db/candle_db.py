@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from typing import Tuple, List, Optional
 
@@ -5,12 +6,13 @@ import pandas as pd
 
 
 class CandleDB:
-    def __init__(self, broker: str):
-        self.db_name = f"{broker}_candle.db"
-        self.conn = sqlite3.connect(self.db_name)
+    def __init__(self, folder_path: str, broker_name: str):
+        self.folder_path = folder_path
+        self.name = os.path.join(folder_path, f"{broker_name}_candle.db")
+        self.conn = sqlite3.connect(self.name)
         self.curs = self.conn.cursor()
 
-    def append_candle_df(
+    def append_candles(
         self,
         df: pd.DataFrame,
         symbol: str,
@@ -38,17 +40,12 @@ class CandleDB:
 
         return False
 
-    def read_candle_df(
+    def get_candles(
         self, symbol: str, interval: str, market: str
     ) -> Optional[pd.DataFrame]:
         table_name = f"{symbol}_{interval}_{market}"
         if self._table_exists(table_name):
             return pd.read_sql(f"SELECT * FROM {table_name}", self.conn)
-
-    def read_first_row(self):
-        return pd.read_sql(
-            f"SELECT * FROM table ORDER BY column DESC LIMIT 1", self.conn
-        )
 
     def __del__(self):
         self.conn.commit()

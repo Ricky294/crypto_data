@@ -1,6 +1,8 @@
 import os
 import json
 import time
+from datetime import datetime
+from typing import Union
 
 import yaml
 from tqdm import tqdm
@@ -51,6 +53,13 @@ def interval_in_seconds(interval: str) -> int:
 def round_down(number: float, precision: int):
     s = str(number)
     return float(s[: s.find(".") + precision + 1])
+
+
+def to_timestamp(value: Union[datetime, int, float]) -> int:
+    if isinstance(value, datetime):
+        value = value.timestamp()
+
+    return int(value)
 
 
 def progress_bar(

@@ -1,12 +1,13 @@
-from src.broker.binance_.schema import (
+from src.trading_bot.broker.binance_.schema import (
     OPEN_TIME,
+    VOLUME,
+    CLOSE_TIME,
+    OPEN_PRICE,
     HIGH_PRICE,
     LOW_PRICE,
-    VOLUME,
-    OPEN_PRICE,
-    CLOSE_TIME,
 )
-from src.broker.binance_.transform import (
+from src.trading_bot.broker.binance_.transform import (
+    drop_rows_before,
     transform_binance_historical_candles,
     transform_binance_stream_candle,
 )
@@ -351,3 +352,13 @@ def test_append_streaming_data():
     appended_df = historical_df.append(candle_df)
 
     assert appended_df.shape == (21, 5)
+
+
+def test_drop_records_before():
+    df = transform_binance_historical_candles(
+        binance_historical_sample_data,
+        [OPEN_TIME, OPEN_PRICE, HIGH_PRICE, LOW_PRICE, VOLUME],
+    )
+    df = drop_rows_before(df, 1636152420)
+
+    assert df.shape == (4, 5)
