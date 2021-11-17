@@ -90,11 +90,7 @@ AGGREGATE_MAP = {
     IGNORE: "sum",
 }
 
-
-SPOT_MARKET = "spot"
-FUTURES_MARKET = "futures"
-
 MARKET_MAP = {
-    SPOT_MARKET: HistoricalKlinesType.SPOT,
-    FUTURES_MARKET: HistoricalKlinesType.FUTURES,
+    "spot": HistoricalKlinesType.SPOT,
+    "futures": HistoricalKlinesType.FUTURES,
 }

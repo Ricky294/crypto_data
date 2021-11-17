@@ -1,4 +1,4 @@
-from src.trading_bot.broker.binance_.schema import (
+from crypto_data.binance.schema import (
     OPEN_TIME,
     VOLUME,
     CLOSE_TIME,
@@ -6,7 +6,7 @@ from src.trading_bot.broker.binance_.schema import (
     HIGH_PRICE,
     LOW_PRICE,
 )
-from src.trading_bot.broker.binance_.transform import (
+from crypto_data.shared.transform import (
     drop_rows_before,
     transform_binance_historical_candles,
     transform_binance_stream_candle,

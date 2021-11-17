@@ -1,5 +1,6 @@
 import os
 import json
+import pathlib
 import time
 from datetime import datetime
 from typing import Union
@@ -26,6 +27,14 @@ def read_json(*path):
 def read_yaml(*path):
     with open(os.path.join(*path)) as f:
         return yaml.load(f, Loader=yaml.FullLoader)
+
+
+def read_config(path: str) -> dict:
+    extension = pathlib.Path(path).suffix
+    if "yaml" in extension:
+        return read_yaml(path)
+    if "json" in extension:
+        return read_json(path)
 
 
 def split_interval(interval: str):

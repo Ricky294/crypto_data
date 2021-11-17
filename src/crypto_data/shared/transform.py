@@ -1,11 +1,11 @@
 import copy
 import json
-from typing import List, Callable
+from typing import List, Callable, Optional
 
 import numpy as np
 import pandas as pd
 
-from src.trading_bot.broker.binance_.schema import (
+from crypto_data.schema import (
     OPEN_TIME,
     CLOSE_TIME,
     COLUMNS,
@@ -13,7 +13,7 @@ from src.trading_bot.broker.binance_.schema import (
     AGGREGATE_MAP,
     CHAR_COLUMN_MAP,
 )
-from src.trading_bot.utils import interval_ratio
+from crypto_data.shared.utils import interval_ratio
 
 
 def append_binance_streaming_data(
@@ -109,3 +109,17 @@ def aggregate_dataframe(
     )
 
     return agg_df
+
+
+def merge_candle_dataframes(
+    db_candles: Optional[pd.DataFrame],
+    new_candles: Optional[pd.DataFrame],
+) -> pd.DataFrame:
+    if db_candles is None and new_candles is None:
+        raise ValueError("At least one of the dataframes must not be None.")
+    if new_candles is None:
+        return db_candles
+    if db_candles is None:
+        return new_candles
+
+    return db_candles.append(new_candles, ignore_index=True)
