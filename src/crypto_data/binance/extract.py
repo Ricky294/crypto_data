@@ -6,16 +6,11 @@ from typing import Optional, List, Union
 import pandas as pd
 from binance import Client
 
-from schema import MARKET_MAP
+from src.crypto_data.binance.transform import transform_binance_historical_candles
+from src.crypto_data.binance.schema import OPEN_TIME, COLUMNS, MARKET_MAP
 from src.crypto_data.shared.transform import (
-    transform_binance_historical_candles,
-    merge_candle_dataframes,
-)
-
-from schema import OPEN_TIME, COLUMNS
-from src.crypto_data.shared.transform import (
-    filter_binance_candle_dataframe,
-    drop_rows_before,
+    filter_dataframe_by_columns,
+    safe_merge_dataframes,
 )
 from src.crypto_data.shared.candle_db import CandleDB
 from src.crypto_data.shared.utils import (
@@ -63,10 +58,10 @@ def get_missing_historical_candles(
 
 
 def get_latest_candle_timestamp(
-    db_candles: Optional[pd.DataFrame],
     symbol: str,
     interval: str,
     market: str,
+    db_candles: Optional[pd.DataFrame],
 ) -> int:
     if db_candles is None:
         return get_earliest_historical_candle_timestamp(
@@ -76,11 +71,11 @@ def get_latest_candle_timestamp(
 
 
 def get_candles(
-    db: CandleDB,
     symbol: str,
     interval: str,
     market: str,
-    columns: List[str],
+    db: CandleDB,
+    columns_to_include: List[str],
     start: Optional[Union[datetime, float, int]] = None,
 ) -> pd.DataFrame:
     """
@@ -90,6 +85,7 @@ def get_candles(
     Every time you run this function it refreshes the database
     with the latest data and returns the new dataset.
     """
+
     optional_db_candles = db.get_candles(
         symbol=symbol, interval=interval, market=market
     )
@@ -114,16 +110,20 @@ def get_candles(
             market=market,
         )
 
-    candles = merge_candle_dataframes(
-        db_candles=optional_db_candles,
-        new_candles=optional_new_candles,
+    candles = safe_merge_dataframes(
+        append_to_df=optional_db_candles,
+        other_df=optional_new_candles,
     )
 
-    candles = filter_binance_candle_dataframe(candles, includes=columns)
+    candles = filter_dataframe_by_columns(
+        candles,
+        all_columns=COLUMNS[0 : len(COLUMNS) - 1],
+        columns_to_include=columns_to_include,
+    )
 
     if start is not None:
         start = to_timestamp(start)
-        candles = drop_rows_before(candles, start_time=start)
+        candles = candles[candles[OPEN_TIME] >= start]
     return candles
 
 

@@ -6,10 +6,11 @@ from crypto_data.binance.schema import (
     HIGH_PRICE,
     LOW_PRICE,
 )
-from crypto_data.shared.transform import (
-    drop_rows_before,
+
+from crypto_data.binance.transform import (
     transform_binance_historical_candles,
     transform_binance_stream_candle,
+    append_binance_streaming_data,
 )
 
 binance_historical_sample_data = [
@@ -354,11 +355,17 @@ def test_append_streaming_data():
     assert appended_df.shape == (21, 5)
 
 
-def test_drop_records_before():
-    df = transform_binance_historical_candles(
+def test_append_binance_streaming_data():
+    historical_df = transform_binance_historical_candles(
         binance_historical_sample_data,
         [OPEN_TIME, OPEN_PRICE, HIGH_PRICE, LOW_PRICE, VOLUME],
     )
-    df = drop_rows_before(df, 1636152420)
 
-    assert df.shape == (4, 5)
+    outer_fun = append_binance_streaming_data(
+        historical_df,
+        lambda candle: print(candle),
+        lambda candle: print(candle.tail()),
+    )
+
+    outer_fun(stream_data=binance_stream_sample_data)
+    outer_fun(stream_data=binance_stream_sample_data)

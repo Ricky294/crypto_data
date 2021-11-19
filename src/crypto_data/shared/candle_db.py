@@ -1,4 +1,3 @@
-import os
 import sqlite3
 from typing import Tuple, List, Optional
 
@@ -6,10 +5,9 @@ import pandas as pd
 
 
 class CandleDB:
-    def __init__(self, folder_path: str, broker_name: str):
-        self.folder_path = folder_path
-        self.name = os.path.join(folder_path, f"{broker_name}_candle.db")
-        self.conn = sqlite3.connect(self.name)
+    def __init__(self, db_path: str):
+        self.db_path = db_path
+        self.conn = sqlite3.connect(db_path)
         self.curs = self.conn.cursor()
 
     def append_candles(

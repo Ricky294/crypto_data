@@ -1,11 +1,11 @@
+import yaml
 import os
 import json
 import pathlib
 import time
 from datetime import datetime
-from typing import Union
+from typing import Union, List
 
-import yaml
 from tqdm import tqdm
 
 SEC_MAP = {
@@ -84,3 +84,7 @@ def progress_bar(
         for _ in range(round(total_time / update_size)):
             time.sleep(sleep_in_seconds)
             bar.update(update_size)
+
+
+def exclude_values(values: List[str], include_values: List[str]):
+    return [value for value in values if value not in include_values]
