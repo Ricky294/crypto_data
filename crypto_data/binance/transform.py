@@ -7,7 +7,7 @@ from crypto_data.shared.transform import (
     filter_dataframe_by_columns,
     aggregate_dataframe,
 )
-from src.crypto_data.binance.schema import (
+from crypto_data.binance.schema import (
     OPEN_TIME,
     CLOSE_TIME,
     COLUMNS,
@@ -15,7 +15,7 @@ from src.crypto_data.binance.schema import (
     AGGREGATE_MAP,
     CHAR_COLUMN_MAP,
 )
-from src.crypto_data.shared.utils import interval_ratio
+from crypto_data.shared.utils import interval_ratio
 
 
 def append_binance_streaming_data(

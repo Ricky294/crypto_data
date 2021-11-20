@@ -1,10 +1,10 @@
 from typing import Callable
 
 import pandas as pd
-from binance import ThreadedWebsocketManager
 from binance.enums import FuturesType, ContractType
+from binance.streams import ThreadedWebsocketManager
 
-from src.crypto_data.binance.transform import append_binance_streaming_data
+from crypto_data.binance.transform import append_binance_streaming_data
 
 
 def candle_stream(

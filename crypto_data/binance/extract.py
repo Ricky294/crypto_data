@@ -4,16 +4,16 @@ from datetime import datetime
 from typing import Optional, List, Union
 
 import pandas as pd
-from binance import Client
+from binance.client import Client
 
-from src.crypto_data.binance.transform import transform_binance_historical_candles
-from src.crypto_data.binance.schema import OPEN_TIME, COLUMNS, MARKET_MAP
-from src.crypto_data.shared.transform import (
+from crypto_data.binance.transform import transform_binance_historical_candles
+from crypto_data.binance.schema import OPEN_TIME, COLUMNS, MARKET_MAP
+from crypto_data.shared.transform import (
     filter_dataframe_by_columns,
     safe_merge_dataframes,
 )
-from src.crypto_data.shared.candle_db import CandleDB
-from src.crypto_data.shared.utils import (
+from crypto_data.shared.candle_db import CandleDB
+from crypto_data.shared.utils import (
     progress_bar,
     interval_in_seconds,
     to_timestamp,
