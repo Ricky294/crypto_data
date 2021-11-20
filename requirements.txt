@@ -2,6 +2,4 @@ numpy
 pandas
 python-binance
 PyYAML
-ta-lib
 tqdm
-websocket-client
