@@ -33,7 +33,7 @@ def main():
         interval=interval,
         market=market,
         db=db,
-        columns_to_include=[
+        columns=[
             OPEN_TIME,
             OPEN_PRICE,
             CLOSE_PRICE,

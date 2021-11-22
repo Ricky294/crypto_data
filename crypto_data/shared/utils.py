@@ -1,7 +1,3 @@
-import yaml
-import os
-import json
-import pathlib
 import time
 from datetime import datetime
 from typing import Union, List
@@ -17,24 +13,6 @@ SEC_MAP = {
     "M": 2629800,
     "Y": 31557600,
 }
-
-
-def read_json(*path):
-    with open(os.path.join(*path)) as f:
-        return json.loads(f.read())
-
-
-def read_yaml(*path):
-    with open(os.path.join(*path)) as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
-
-
-def read_config(path: str) -> dict:
-    extension = pathlib.Path(path).suffix
-    if "yaml" in extension:
-        return read_yaml(path)
-    if "json" in extension:
-        return read_json(path)
 
 
 def split_interval(interval: str):
@@ -57,11 +35,6 @@ def interval_ratio(numerator_interval: str, denominator_interval: str) -> int:
 def interval_in_seconds(interval: str) -> int:
     value, timeframe = split_interval(interval)
     return value * SEC_MAP[timeframe]
-
-
-def round_down(number: float, precision: int):
-    s = str(number)
-    return float(s[: s.find(".") + precision + 1])
 
 
 def to_timestamp(value: Union[datetime, int, float]) -> int:

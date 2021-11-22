@@ -1,16 +1,17 @@
-from typing import Callable
+from typing import Callable, Union
 
 import pandas as pd
 from binance.enums import FuturesType, ContractType
 from binance.streams import ThreadedWebsocketManager
 
 from crypto_data.binance.transform import append_binance_streaming_data
+from crypto_data.enum.market import Market
 
 
 def candle_stream(
     symbol: str,
     interval: str,
-    market: str,
+    market: Union[Market, str],
     candles: pd.DataFrame,
     on_candle: Callable[[dict], None],
     on_candle_close: Callable[[pd.DataFrame], None],
@@ -22,7 +23,7 @@ def candle_stream(
     twm = ThreadedWebsocketManager()
     twm.start()
 
-    if market.lower() == "spot":
+    if str(market).upper() == "SPOT":
         twm.start_kline_socket(
             symbol=symbol,
             interval=interval,
@@ -33,7 +34,7 @@ def candle_stream(
             ),
         )
 
-    elif market.lower() == "futures":
+    elif str(market).upper() == "FUTURES":
         twm.start_kline_futures_socket(
             symbol=symbol,
             interval=interval,
@@ -46,4 +47,4 @@ def candle_stream(
             contract_type=ContractType.PERPETUAL,
         )
     else:
-        raise ValueError("Market must be either 'futures' or 'spot'.")
+        raise ValueError("Market must be either 'FUTURES' or 'SPOT'.")

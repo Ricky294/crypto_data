@@ -5,7 +5,7 @@ import websocket
 
 from tests import tests_path
 from crypto_data.shared.utils import exclude_values
-from crypto_data.binance.extract import get_candles, get_latest_candle_timestamp
+from crypto_data.binance.extract import get_candles, _get_latest_candle_timestamp
 from crypto_data.binance.schema import (
     OPEN_TIME,
     OPEN_PRICE,
@@ -50,11 +50,11 @@ def test_get_candles():
         symbol="btcusdt",
         interval="1h",
         market="futures",
-        columns_to_include=columns_to_include,
+        columns=columns_to_include,
         db=db,
     )
 
-    first_candle_timestamp = get_latest_candle_timestamp(
+    first_candle_timestamp = _get_latest_candle_timestamp(
         "btcusdt", "1h", "futures", db_candles=None
     )
 

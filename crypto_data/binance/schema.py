@@ -91,6 +91,6 @@ AGGREGATE_MAP = {
 }
 
 MARKET_MAP = {
-    "spot": HistoricalKlinesType.SPOT,
-    "futures": HistoricalKlinesType.FUTURES,
+    "SPOT": HistoricalKlinesType.SPOT,
+    "FUTURES": HistoricalKlinesType.FUTURES,
 }

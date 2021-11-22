@@ -6,13 +6,13 @@ from crypto_data.shared.utils import exclude_values
 
 
 def filter_dataframe_by_columns(
-    candles_df: pd.DataFrame, all_columns, columns_to_include: List[str]
+    df: pd.DataFrame, all_columns: List[str], columns_to_include: List[str]
 ):
     columns_to_drop = exclude_values(
         values=all_columns, include_values=columns_to_include
     )
-    candles_df.drop(columns=columns_to_drop, inplace=True, axis=1)
-    return candles_df
+    df.drop(columns=columns_to_drop, inplace=True, axis=1)
+    return df
 
 
 def safe_merge_dataframes(
