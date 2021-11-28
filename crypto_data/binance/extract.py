@@ -69,14 +69,27 @@ def _get_latest_candle_timestamp(
     return int(db_candles[OPEN_TIME].values[-1]) + interval_in_seconds(interval)
 
 
+class Limit:
+    def __init__(self, type: str, value: Union[datetime, int, float]):
+        self.type = type
+        self.value = value
+
+    @classmethod
+    def datetime(cls, value: Union[datetime, int, float]):
+        return cls(type="datetime", value=value)
+
+    @classmethod
+    def max_records(cls, value: int):
+        return cls(type="max_records", value=value)
+
+
 def get_candles(
     symbol: str,
     interval: str,
     market: Union[Market, str],
     db: CandleDB,
     columns: List[str],
-    start_time: Union[datetime, float, int] = None,
-    limit: int = None,
+    limit: Limit = None,
 ) -> pd.DataFrame:
     """
     Downloads the latest data from the binance api
@@ -85,9 +98,6 @@ def get_candles(
     Every time you run this function it refreshes the database
     with the latest data and returns the new dataset.
     """
-
-    if start_time is not None and limit is not None:
-        raise ValueError("max_limit and start_time params are both not None")
 
     optional_db_candles = db.get_candles(
         symbol=symbol, interval=interval, market=str(market)
@@ -124,11 +134,12 @@ def get_candles(
         columns_to_include=columns,
     )
 
-    if start_time is not None:
-        start = to_timestamp(start_time)
-        return candles[candles[OPEN_TIME] >= start]
-    elif limit is not None:
-        return candles.tail(limit)
+    if limit is not None:
+        if limit.type == "datetime":
+            start = to_timestamp(limit.value)
+            return candles[candles[OPEN_TIME] >= start]
+        if limit.type == "max_records":
+            return candles.tail(limit.value)
     return candles
 
 
