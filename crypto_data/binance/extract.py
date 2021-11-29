@@ -99,18 +99,19 @@ def get_candles(
     with the latest data and returns the new dataset.
     """
 
+    market = str(market).upper()
     optional_db_candles = db.get_candles(
-        symbol=symbol, interval=interval, market=str(market)
+        symbol=symbol, interval=interval, market=market
     )
 
     optional_new_candles = _get_missing_historical_candles(
         symbol=symbol,
         interval=interval,
-        market=str(market),
+        market=market,
         latest_candle_time=_get_latest_candle_timestamp(
             symbol=symbol,
             interval=interval,
-            market=str(market),
+            market=market,
             db_candles=optional_db_candles,
         ),
     )
@@ -120,7 +121,7 @@ def get_candles(
             df=optional_new_candles,
             symbol=symbol,
             interval=interval,
-            market=str(market),
+            market=market,
         )
 
     candles = safe_merge_dataframes(
@@ -133,6 +134,10 @@ def get_candles(
         all_columns=COLUMNS[0 : len(COLUMNS) - 1],
         columns_to_include=columns,
     )
+
+    candles.interval = interval
+    candles.symbol = symbol.upper()
+    candles.market = market.upper()
 
     if limit is not None:
         if limit.type == "datetime":

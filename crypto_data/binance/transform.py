@@ -1,8 +1,9 @@
-from typing import List, Callable
+from typing import List, Callable, Dict
 
 import numpy as np
 import pandas as pd
 
+from crypto_data.binance.candle import StreamCandle
 from crypto_data.shared.transform import (
     filter_dataframe_by_columns,
     aggregate_dataframe,
@@ -19,21 +20,46 @@ from crypto_data.shared.utils import interval_ratio
 
 
 def append_binance_streaming_data(
-    candle_df: pd.DataFrame,
-    on_candle: Callable,
-    on_candle_close: Callable,
+    candles: pd.DataFrame,
+    on_candle: Callable[[StreamCandle], any],
+    on_candle_close: Callable[[pd.DataFrame], any],
 ):
     def transform(stream_data: dict):
-        nonlocal candle_df
+        nonlocal candles
         nonlocal on_candle
         nonlocal on_candle_close
 
-        new_candle: dict = stream_data["k"]
-        on_candle(new_candle)
-        if new_candle["x"]:
-            stream_df = transform_binance_stream_candle(new_candle, list(candle_df))
+        candle = StreamCandle(stream_data)
+        on_candle(candle)
+
+        if candle.closed:
+            stream_df = candle.to_dataframe(columns=list(candles))
+            candles = candles.append(stream_df, ignore_index=True)
+            on_candle_close(candles)
+
+    return transform
+
+
+def append_binance_multi_streaming_data(
+    symbol_candles: Dict[str, pd.DataFrame],
+    on_candle: Callable[[StreamCandle], any],
+    on_candle_close: Callable[[StreamCandle, Dict[str, pd.DataFrame]], any],
+):
+    def transform(stream_data: dict):
+        nonlocal symbol_candles
+        nonlocal on_candle
+        nonlocal on_candle_close
+
+        candle = StreamCandle(stream_data)
+        on_candle(candle)
+
+        if candle.closed:
+            candle_df = symbol_candles[candle.symbol]
+            stream_df = candle.to_dataframe(columns=list(candle_df))
             candle_df = candle_df.append(stream_df, ignore_index=True)
-            on_candle_close(candle_df)
+            symbol_candles[candle.symbol] = candle_df
+
+            on_candle_close(candle, symbol_candles)
 
     return transform
 
