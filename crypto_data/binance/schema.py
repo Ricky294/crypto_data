@@ -1,5 +1,6 @@
 from binance.enums import HistoricalKlinesType
 
+
 OPEN_TIME = "open_time"
 OPEN_PRICE = "open_price"
 HIGH_PRICE = "high_price"
@@ -12,6 +13,7 @@ NUMBER_OF_TRADES = "number_of_trades"
 TAKER_BUY_BASE_ASSET_VOLUME = "taker_buy_base_asset_volume"
 TAKER_BUY_QUOTE_ASSET_VOLUME = "taker_buy_quote_asset_volume"
 IGNORE = "ignore"
+
 
 COLUMNS = [
     OPEN_TIME,

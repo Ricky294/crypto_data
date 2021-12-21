@@ -7,7 +7,7 @@ from crypto_data.binance.schema import (
     LOW_PRICE,
 )
 
-from crypto_data.binance.transform import (
+from crypto_data.binance.pd.transform import (
     transform_binance_historical_candles,
     transform_binance_stream_candle,
     append_binance_streaming_data,

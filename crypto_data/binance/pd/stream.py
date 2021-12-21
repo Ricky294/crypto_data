@@ -4,7 +4,7 @@ import pandas as pd
 from binance.enums import FuturesType
 from binance.streams import ThreadedWebsocketManager
 
-from crypto_data.binance.transform import (
+from crypto_data.binance.pd.transform import (
     append_binance_streaming_data,
     append_binance_multi_streaming_data,
 )

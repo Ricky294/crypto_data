@@ -1,6 +1,7 @@
 import json
 from typing import List, Union
 
+import numpy as np
 import pandas as pd
 
 
@@ -18,6 +19,7 @@ class StreamCandle:
         candle = stream_data["k"]
         if "s" in candle:
             self.symbol = candle["s"]
+
         self.interval = candle["i"]
         self.open_time = int(candle["t"] / 1000)
         self.close_time = int(candle["T"] / 1000)
@@ -29,13 +31,18 @@ class StreamCandle:
         self.number_of_trades = int(candle["n"])
         self.closed = bool(candle["x"])
         self.quote_asset_volume = float(candle["q"])
-        self.taker_buy_volume = float(candle["V"])
+        self.taker_buy_base_asset_volume = float(candle["V"])
         self.taker_buy_quote_asset_volume = float(candle["Q"])
 
     def to_dataframe(self, columns: List[str]):
         data = {key: [value] for key, value in self.__dict__.items() if key in columns}
 
         return pd.DataFrame(data)
+
+    def to_numpy_array(self, columns: List[str]):
+        values = [value for key, value in self.__dict__.items() if key in columns]
+
+        return np.array(values)
 
     def __str__(self):
         return str(self.__dict__)

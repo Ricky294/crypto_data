@@ -2,7 +2,7 @@ from typing import Dict
 
 import pandas as pd
 
-from crypto_data.binance.extract import get_candles
+from crypto_data.binance.pd.extract import get_candles
 from crypto_data.binance.schema import (
     OPEN_TIME,
     OPEN_PRICE,
@@ -11,7 +11,7 @@ from crypto_data.binance.schema import (
     LOW_PRICE,
     VOLUME,
 )
-from crypto_data.binance.stream import candle_stream, candle_multi_stream
+from crypto_data.binance.pd.stream import candle_stream, candle_multi_stream
 from crypto_data.binance.candle import StreamCandle
 from crypto_data.shared.candle_db import CandleDB
 
@@ -84,7 +84,7 @@ def single_symbol():
     market = "futures"
     db = CandleDB("binance_candles.db")
 
-    candles_df = get_candles(
+    candle_df = get_candles(
         symbol=symbol,
         interval=interval,
         market=market,
@@ -103,7 +103,7 @@ def single_symbol():
         symbol=symbol,
         interval=interval,
         market=market,
-        candles=candles_df,
+        candles=candle_df,
         on_candle=on_candle,
         on_candle_close=on_candle_close,
     )
