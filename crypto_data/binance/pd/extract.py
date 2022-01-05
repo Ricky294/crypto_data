@@ -22,40 +22,6 @@ from crypto_data.shared.utils import (
 )
 
 
-def _get_missing_historical_candles(
-    symbol: str,
-    interval: str,
-    market: str,
-    latest_candle_time: int,
-) -> Optional[pd.DataFrame]:
-    download_limit = 1000
-
-    progress_bar_thread = multiprocessing.Process(
-        target=progress_bar,
-        kwargs={
-            "start_time": latest_candle_time,
-            "end_time": int(time.time()),
-            "interval": interval,
-            "update_size": download_limit,
-            "sleep_in_seconds": 1,
-        },
-    )
-    progress_bar_thread.start()
-
-    optional_new_candles = _get_historical_candle_dataframe(
-        symbol=symbol,
-        interval=interval,
-        market=market,
-        start_time=latest_candle_time * 1000,
-        include_columns=COLUMNS[0 : len(COLUMNS) - 1],
-        limit=download_limit,
-        remove_last_open_candle=True,
-    )
-
-    progress_bar_thread.terminate()
-    return optional_new_candles
-
-
 def _get_latest_candle_timestamp(
     symbol: str,
     interval: str,
@@ -89,6 +55,7 @@ def get_candles(
     market: Union[Market, str],
     db: CandleDB,
     columns: List[str],
+    download_missing: bool = True,
     limit: Limit = None,
 ) -> pd.DataFrame:
     """
@@ -100,28 +67,67 @@ def get_candles(
     """
 
     market = str(market).upper()
-    optional_db_candles = db.get_candles(
-        symbol=symbol, interval=interval, market=market
-    )
+    table_name = f"{symbol}_{market}_{interval}".lower()
 
-    optional_new_candles = _get_missing_historical_candles(
-        symbol=symbol,
-        interval=interval,
-        market=market,
-        latest_candle_time=_get_latest_candle_timestamp(
+    print(f"Attempting to read data from {table_name} table.")
+    optional_db_candles = db.get_candles(table_name=table_name)
+    if optional_db_candles is None:
+        print(f"Table {table_name} is empty/not exists.")
+    else:
+        print(f"{optional_db_candles.shape} read from table {table_name}")
+
+    if optional_db_candles is None and not download_missing:
+        raise ValueError(
+            "Parameter download_missing is set to False, while database table is empty. "
+            "To solve this issue set download_missing to True."
+        )
+
+    optional_new_candles = None
+    if download_missing:
+        latest_candle_time = _get_latest_candle_timestamp(
             symbol=symbol,
             interval=interval,
             market=market,
             db_candles=optional_db_candles,
-        ),
-    )
+        )
+
+        download_limit = 1000
+
+        message = "Downloading" if optional_db_candles is None else "Updating"
+        message += " candles...\nNote: The below progress bar is just an estimate, not necessarily accurate."
+
+        print(message)
+        progress_bar_thread = multiprocessing.Process(
+            target=progress_bar,
+            kwargs={
+                "start_time": latest_candle_time,
+                "end_time": int(time.time()),
+                "interval": interval,
+                "update_size": download_limit,
+                "sleep_in_seconds": 1,
+            },
+        )
+        progress_bar_thread.start()
+
+        optional_new_candles = _download_historical_candle_dataframe(
+            symbol=symbol,
+            interval=interval,
+            market=market,
+            start_time=latest_candle_time * 1000,
+            include_columns=COLUMNS[0 : len(COLUMNS) - 1],
+            limit=download_limit,
+            remove_last_open_candle=True,
+        )
+
+        progress_bar_thread.terminate()
+        print("\nData downloaded successfully.")
+    else:
+        print("Skipping downloading new candles.")
 
     if optional_new_candles is not None:
         db.append_candles(
             df=optional_new_candles,
-            symbol=symbol,
-            interval=interval,
-            market=market,
+            table_name=table_name,
         )
 
     candles = safe_merge_dataframes(
@@ -134,10 +140,6 @@ def get_candles(
         all_columns=COLUMNS[0 : len(COLUMNS) - 1],
         columns_to_include=columns,
     )
-
-    candles.interval = interval
-    candles.symbol = symbol.upper()
-    candles.market = market.upper()
 
     if limit is not None:
         if limit.type == "datetime":
@@ -157,7 +159,7 @@ def _get_earliest_historical_candle_timestamp(symbol: str, interval: str, market
     )
 
 
-def _get_historical_candle_dataframe(
+def _download_historical_candle_dataframe(
     symbol: str,
     interval: str,
     market: str,

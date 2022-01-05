@@ -12,23 +12,18 @@ class CandleDB:
     def append_candles(
         self,
         df: pd.DataFrame,
-        symbol: str,
-        interval: str,
-        market: str,
+        table_name: str,
     ):
         conn = sqlite3.connect(self.db_path)
         df.to_sql(
-            f"{symbol}_{interval}_{market}".lower(),
+            table_name,
             conn,
             if_exists="append",
             index=False,
         )
         conn.close()
 
-    def get_candles(
-        self, symbol: str, interval: str, market: str
-    ) -> Optional[pd.DataFrame]:
-        table_name = f"{symbol}_{interval}_{market}".lower()
+    def get_candles(self, table_name) -> Optional[pd.DataFrame]:
         conn = sqlite3.connect(self.db_path)
         try:
             query_result = pd.read_sql(f"SELECT * FROM {table_name}", conn)

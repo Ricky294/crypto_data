@@ -24,6 +24,9 @@ def candle_stream(
     Creates a binance data stream.
     """
 
+    print(
+        f"Starting candle stream on (symbol: {symbol}, market: {market}, interval: {interval})..."
+    )
     twm = ThreadedWebsocketManager()
     twm.start()
 
@@ -54,3 +57,5 @@ def candle_stream(
         )
     else:
         raise ValueError("Market must be either 'FUTURES' or 'SPOT'.")
+
+    print(f"Candle stream started.")

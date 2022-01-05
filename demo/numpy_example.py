@@ -25,7 +25,7 @@ def on_candle_close(candles: np.ndarray):
 def single_symbol():
 
     symbol = "btcusdt"
-    interval = "15m"
+    interval = "1h"
     market = "futures"
     db = CandleDB("binance_candles.db")
 
@@ -44,6 +44,7 @@ def single_symbol():
         market=market,
         db=db,
         columns=columns,
+        download_missing=True,
     )
 
     candle_arr = candle_df.to_numpy()
