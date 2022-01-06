@@ -1,3 +1,4 @@
+import logging
 from typing import Callable, Union, List
 
 import numpy as np
@@ -24,8 +25,8 @@ def candle_stream(
     Creates a binance data stream.
     """
 
-    print(
-        f"Starting candle stream on (symbol: {symbol}, market: {market}, interval: {interval})..."
+    logging.info(
+        f"Starting candle stream on (symbol: {symbol!r}, market: {market!r}, interval: {interval!r})."
     )
     twm = ThreadedWebsocketManager()
     twm.start()
@@ -58,4 +59,4 @@ def candle_stream(
     else:
         raise ValueError("Market must be either 'FUTURES' or 'SPOT'.")
 
-    print(f"Candle stream started.")
+    logging.info(f"Candle stream started.")

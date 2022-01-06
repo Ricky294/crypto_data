@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 import time
 from datetime import datetime
@@ -69,12 +70,12 @@ def get_candles(
     market = str(market).upper()
     table_name = f"{symbol}_{market}_{interval}".lower()
 
-    print(f"Attempting to read data from {table_name} table.")
+    logging.info(f"Attempting to read data from (database: {db.db_path!r}, table: {table_name!r}).")
     optional_db_candles = db.get_candles(table_name=table_name)
     if optional_db_candles is None:
-        print(f"Table {table_name} is empty/not exists.")
+        logging.info(f"Table {table_name!r} not exists/empty.")
     else:
-        print(f"{optional_db_candles.shape} read from table {table_name}")
+        logging.info(f"{optional_db_candles.shape} read from table {table_name!r}.")
 
     if optional_db_candles is None and not download_missing:
         raise ValueError(
@@ -94,9 +95,9 @@ def get_candles(
         download_limit = 1000
 
         message = "Downloading" if optional_db_candles is None else "Updating"
-        message += " candles...\nNote: The below progress bar is just an estimate, not necessarily accurate."
+        message += " candles. (Note: The below progress bar is just an estimate, not necessarily accurate.)"
 
-        print(message)
+        logging.info(message)
         progress_bar_thread = multiprocessing.Process(
             target=progress_bar,
             kwargs={
@@ -120,9 +121,9 @@ def get_candles(
         )
 
         progress_bar_thread.terminate()
-        print("\nData downloaded successfully.")
+        logging.info("Data downloaded successfully.")
     else:
-        print("Skipping downloading new candles.")
+        logging.info("Skipping downloading new candles.")
 
     if optional_new_candles is not None:
         db.append_candles(
@@ -137,7 +138,7 @@ def get_candles(
 
     candles = filter_dataframe_by_columns(
         candles,
-        all_columns=COLUMNS[0 : len(COLUMNS) - 1],
+        all_columns=COLUMNS[0:len(COLUMNS) - 1],
         columns_to_include=columns,
     )
 
