@@ -3,6 +3,7 @@ from typing import List, Callable
 import numpy as np
 
 from crypto_data.binance.candle import StreamCandle
+from crypto_data.log import logger
 
 
 def append_binance_streaming_data(
@@ -10,6 +11,7 @@ def append_binance_streaming_data(
     columns: List[str],
     on_candle: Callable[[StreamCandle], any],
     on_candle_close: Callable[[np.ndarray], any],
+    log: bool,
 ):
     def transform(stream_data: dict):
         nonlocal candles
@@ -18,6 +20,9 @@ def append_binance_streaming_data(
 
         candle = StreamCandle(stream_data)
         on_candle(candle)
+
+        if log:
+            logger.info(candle)
 
         if candle.closed:
             stream_candle = candle.to_numpy_array(columns=columns).reshape(

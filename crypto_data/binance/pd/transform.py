@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from crypto_data.binance.candle import StreamCandle
+from crypto_data.log import logger
 from crypto_data.shared.transform import (
     filter_dataframe_by_columns,
     aggregate_dataframe,
@@ -21,6 +22,7 @@ from crypto_data.shared.utils import interval_ratio
 
 def append_binance_streaming_data(
     candles: pd.DataFrame,
+    log: bool,
     on_candle: Callable[[StreamCandle], any],
     on_candle_close: Callable[[pd.DataFrame], any],
 ):
@@ -31,6 +33,9 @@ def append_binance_streaming_data(
 
         candle = StreamCandle(stream_data)
         on_candle(candle)
+
+        if log:
+            logger.info(candle)
 
         if candle.closed:
             stream_df = candle.to_dataframe(columns=list(candles))

@@ -1,6 +1,8 @@
+import logging
 from typing import Dict
 
 import pandas as pd
+from crypto_data.binance.pd.transform import aggregate_candle_dataframe
 
 from crypto_data.binance.pd.extract import get_candles
 from crypto_data.binance.schema import (
@@ -17,11 +19,11 @@ from crypto_data.shared.candle_db import CandleDB
 
 
 def on_candle(candle: StreamCandle):
-    print(candle)
+    ...
 
 
 def on_candle_close(candles: pd.DataFrame):
-    print(candles.tail(n=20))
+    ...
 
 
 def on_multi_candle_close(candle: StreamCandle, candles: Dict[str, pd.DataFrame]):
@@ -99,6 +101,10 @@ def single_symbol():
         ],
     )
 
+    btc_1h = aggregate_candle_dataframe(
+        candle_df, interval, "1h"
+    )
+
     candle_stream(
         symbol=symbol,
         interval=interval,
@@ -110,5 +116,6 @@ def single_symbol():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     single_symbol()
     # multi_symbol()

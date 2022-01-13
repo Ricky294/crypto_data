@@ -1,10 +1,10 @@
-import logging
 from typing import Callable, Union, List
 
 import numpy as np
 from binance.enums import FuturesType
 from binance.streams import ThreadedWebsocketManager
 
+from crypto_data.log import logger
 from crypto_data.binance.np.transform import (
     append_binance_streaming_data,
 )
@@ -20,12 +20,12 @@ def candle_stream(
     candles: np.ndarray,
     on_candle: Callable[[StreamCandle], None],
     on_candle_close: Callable[[np.ndarray], None],
+    log: bool = True,
 ):
     """
     Creates a binance data stream.
     """
-
-    logging.info(
+    logger.info(
         f"Starting candle stream on (symbol: {symbol!r}, market: {market!r}, interval: {interval!r})."
     )
     twm = ThreadedWebsocketManager()
@@ -41,6 +41,7 @@ def candle_stream(
                 columns=columns,
                 on_candle=on_candle,
                 on_candle_close=on_candle_close,
+                log=log,
             ),
         )
 
@@ -54,9 +55,10 @@ def candle_stream(
                 columns=columns,
                 on_candle=on_candle,
                 on_candle_close=on_candle_close,
+                log=log,
             ),
         )
     else:
         raise ValueError("Market must be either 'FUTURES' or 'SPOT'.")
 
-    logging.info(f"Candle stream started.")
+    logger.info(f"Candle stream started.")

@@ -1,4 +1,3 @@
-import logging
 import multiprocessing
 import time
 from datetime import datetime
@@ -8,6 +7,7 @@ from typing import Optional, List, Union
 import pandas as pd
 from binance.client import Client
 
+from crypto_data.log import logger
 from crypto_data.binance.pd.transform import transform_binance_historical_candles
 from crypto_data.binance.schema import OPEN_TIME, COLUMNS, MARKET_MAP
 from crypto_data.enum.market import Market
@@ -70,12 +70,12 @@ def get_candles(
     market = str(market).upper()
     table_name = f"{symbol}_{market}_{interval}".lower()
 
-    logging.info(f"Attempting to read data from (database: {db.db_path!r}, table: {table_name!r}).")
+    logger.info(f"Attempting to read data from (database: {db.db_path!r}, table: {table_name!r}).")
     optional_db_candles = db.get_candles(table_name=table_name)
     if optional_db_candles is None:
-        logging.info(f"Table {table_name!r} not exists/empty.")
+        logger.info(f"Table {table_name!r} not exists/empty.")
     else:
-        logging.info(f"{optional_db_candles.shape} read from table {table_name!r}.")
+        logger.info(f"{optional_db_candles.shape} read from table {table_name!r}.")
 
     if optional_db_candles is None and not download_missing:
         raise ValueError(
@@ -97,7 +97,7 @@ def get_candles(
         message = "Downloading" if optional_db_candles is None else "Updating"
         message += " candles. (Note: The below progress bar is just an estimate, not necessarily accurate.)"
 
-        logging.info(message)
+        logger.info(message)
         progress_bar_thread = multiprocessing.Process(
             target=progress_bar,
             kwargs={
@@ -121,9 +121,9 @@ def get_candles(
         )
 
         progress_bar_thread.terminate()
-        logging.info("Data downloaded successfully.")
+        logger.info("Data downloaded successfully.")
     else:
-        logging.info("Skipping downloading new candles.")
+        logger.info("Skipping downloading new candles.")
 
     if optional_new_candles is not None:
         db.append_candles(

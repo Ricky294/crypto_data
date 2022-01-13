@@ -1,10 +1,10 @@
-import logging
 from typing import Callable, Union, Dict
 
 import pandas as pd
 from binance.enums import FuturesType
 from binance.streams import ThreadedWebsocketManager
 
+from crypto_data.log import logger
 from crypto_data.binance.pd.transform import (
     append_binance_streaming_data,
     append_binance_multi_streaming_data,
@@ -65,12 +65,13 @@ def candle_stream(
     candles: pd.DataFrame,
     on_candle: Callable[[StreamCandle], None],
     on_candle_close: Callable[[pd.DataFrame], None],
+    log: bool = True,
 ):
     """
     Creates a binance data stream.
     """
 
-    logging.info(
+    logger.info(
         f"Starting candle stream on (symbol: {symbol!r}, market: {market!r}, interval: {interval!r})."
     )
     twm = ThreadedWebsocketManager()
@@ -85,6 +86,7 @@ def candle_stream(
                 candles=candles,
                 on_candle=on_candle,
                 on_candle_close=on_candle_close,
+                log=log,
             ),
         )
 
@@ -97,9 +99,10 @@ def candle_stream(
                 candles=candles,
                 on_candle=on_candle,
                 on_candle_close=on_candle_close,
+                log=log,
             ),
         )
     else:
         raise ValueError("Market must be either 'FUTURES' or 'SPOT'.")
 
-    logging.info(f"Candle stream started.")
+    logger.info(f"Candle stream started.")

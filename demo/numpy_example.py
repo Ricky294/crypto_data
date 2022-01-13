@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 from crypto_data.binance.pd.extract import get_candles
@@ -15,7 +17,7 @@ from crypto_data.shared.candle_db import CandleDB
 
 
 def on_candle(candle: StreamCandle):
-    print(candle)
+    ...
 
 
 def on_candle_close(candles: np.ndarray):
@@ -23,6 +25,7 @@ def on_candle_close(candles: np.ndarray):
 
 
 def single_symbol():
+    logging.basicConfig(level=logging.INFO)
 
     symbol = "btcusdt"
     interval = "1h"
@@ -61,4 +64,7 @@ def single_symbol():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+    )
     single_symbol()
